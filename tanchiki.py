@@ -20,7 +20,8 @@ geor = transform.scale(geor,(700,600))
 lvl1 = image.load('lvl1.png')
 lvl1 = transform.scale(lvl1,(700,600))
 
-
+gameover = image.load("gameover.png")
+gameover = transform.scale(gameover,(700,600))
 ###################################################################################
 ###################################################################################
 ###################################################################################
@@ -31,7 +32,7 @@ class stena(sprite.Sprite):
     def __init__(self,  x, y,width,height):
         super().__init__()
         self.image = Surface((width,height))
-        self.image.fill((0,0,255))
+        #self.image.fill((0,0,255))
         self.rect = self.image.get_rect()
         self.rect.x = x
         self.rect.y = y
@@ -42,7 +43,7 @@ class stena(sprite.Sprite):
 class sprait(sprite.Sprite):
     def __init__(self, kartinka, x, y, napr):
         super().__init__()
-        self.image = transform.scale(image.load(kartinka), (40, 40))
+        self.image = transform.scale(image.load(kartinka), (35, 40))
         self.rect = self.image.get_rect()
         self.rect.x = x
         self.rect.y = y
@@ -98,7 +99,7 @@ class igrok(sprait):
 class bullet(sprait):
     def __init__(self, kartinka, x, y,napr):
         super().__init__(kartinka, x, y, napr)
-        self.image = transform.scale(image.load(kartinka), (7, 4))
+        self.image = transform.scale(image.load(kartinka), (4, 4))
         if tanksus.napr == "up":
             self.napr == "up"
         if tanksus.napr == "down":
@@ -124,7 +125,7 @@ lifes = 3
 class vrag(sprait):
     def __init__(self, kartinka, x, y,napr):
         super().__init__(kartinka, x, y, napr)
-        self.image = transform.scale(image.load(kartinka), (40, 40)) 
+        self.image = transform.scale(image.load(kartinka), (30, 30)) 
         self.rect = self.image.get_rect()
         self.rect.x = x
         self.rect.y = y
@@ -135,13 +136,13 @@ class vrag(sprait):
         if self.rect.x > x2:
             self.napr = "left"
         if self.napr == "left":
-            self.rect.x -= 5   
+            self.rect.x -= 3   
         else:
-            self.rect.x += 5
+            self.rect.x += 3
     def collide(self, p):
         if sprite.collide_rect(self,p):
-            tanksus.rect.x = 300
-            tanksus.rect.y = 500
+            tanksus.rect.x = 333
+            tanksus.rect.y = 428
             global lifes
             lifes -= 1
 
@@ -159,16 +160,29 @@ class vrag(sprait):
 ###################################################################################
 
 
-tanksus = igrok('tank_gg.png',300,210, "up")
+tanksus = igrok('tank_gg.png',333,428, "up")
 
 puli = list()
 
 
-tankvrag = vrag('tank_gg2.png',650,210,"left")
+tankvrag = vrag('tank_gg2.png',650,255,"left")
+tankvrag2 = vrag('tank_gg2.png',650,355,"left")
 
 walls = [
-    stena(0, 0, 60, 600),
-    stena(640, 0, 60, 600)
+    stena(0, 0, 60, 600), #
+    stena(640, 0, 60, 600), #
+    stena(60, 47, 50, 207), #
+    stena(160, 47, 56, 207), #
+    stena(270, 47, 54, 160), #
+    stena(377,47,55,160), #
+    stena(485,47,55,207), #
+    stena(593,47,47,207), #
+    stena(108,300, 108,48), # 
+    stena(485,300,108,48), #
+    stena(60,392,48,160), # 
+    stena(160,394,54,160), #
+    stena(483,394,54,160), # 
+    stena(593,394,54,160) #
 ]
 
 
@@ -183,7 +197,7 @@ walls = [
 
 
 
-
+lose = False
 game = False
 menu = True
 while menu:
@@ -217,33 +231,72 @@ while game:
 
         if i.type == KEYDOWN:
             if i.key == K_SPACE:
-                b1 = bullet('bullet.png', tanksus.rect.x + 36, tanksus.rect.y + 20, tanksus.napr)
-                puli.append(b1)        
+                b = bullet('bullet.png', tanksus.rect.x + 18, tanksus.rect.y, tanksus.napr)
+                puli.append(b)        
 
-
+    if lifes == 0:
+        game = False
+        lose = True
     
 
     if i.type == MOUSEBUTTONDOWN:
         if i.button == 1:
             print(i.pos)
-    okno.blit(lvl1,(0,0))   
+      
 
     for w in walls:
         w.ris()
         if sprite.collide_rect(w, tanksus):
             tanksus.rect.x = tanksus.lasx
             tanksus.rect.y = tanksus.lasy
+    okno.blit(lvl1,(0,0)) 
     for b in puli:
         b.vistrel()
-        if b.rect.x < 0:
+        for ww in walls:
+            if sprite.collide_rect(ww, b):
+                puli.remove(b)
+        if sprite.collide_rect(b, tankvrag):
             puli.remove(b)
-    
-    
-    
-    tankvrag.ezda(60,600)
+            tankvrag.rect.x = 1000
+            tankvrag.rect.y = 1000
 
+        if sprite.collide_rect(b, tankvrag2):
+            puli.remove(b)
+            tankvrag2.rect.x = 1000
+            tankvrag2.rect.y = 1000
+
+    if sprite.collide_rect(tankvrag, tanksus):
+        lifes -= 1
+        tanksus.rect.x = 333
+        tanksus.rect.y = 485
+
+    if sprite.collide_rect(tankvrag2, tanksus):
+        lifes -= 1
+        tanksus.rect.x = 333
+        tanksus.rect.y = 485
+
+
+    if tankvrag.rect.x > 700 and tankvrag.rect.y > 700 and tankvrag2.rect.x > 700 and tankvrag2.rect.y > 700:
+        game = False
+        lose = True
+
+
+
+    tankvrag.ezda(60,600)
+    tankvrag2.ezda(180, 540)
     tanksus.upravl()
 
+    clock.tick(FPS) 
+
+    display.update()
+
+
+while lose:
+    for i in event.get(): #ппроверка очереди событий
+        if i.type == QUIT: #если щелк по крестику то стоп типо
+            lose = False
+    
+    okno.blit(gameover,(0,0))
     clock.tick(FPS) 
 
     display.update()
